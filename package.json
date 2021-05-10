@@ -1,0 +1,14 @@
+{
+  "name": "binance-bot",
+  "version": "0.5.2",
+  "description": "BinanceBot",
+  "main": "server.js",
+  "author": {
+    "name": "Ron Driessen"
+  },
+  "dependencies": {
+    "binance-api-node": "^0.10.41",
+    "express": "^4.17.1",
+    "jquery": "^3.6.0"
+  }
+}

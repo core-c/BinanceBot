@@ -1,0 +1,391 @@
+<!doctype html>
+<html>
+<head>
+	<title>Binance Bot</title>
+	<link rel="stylesheet" type="text/css" href="https://code.highcharts.com/css/stocktools/gui.css">
+	<link rel="stylesheet" type="text/css" href="https://code.highcharts.com/css/annotations/popup.css">
+<style>
+    body {
+        user-select: none;
+        cursor: default;
+    }
+    #chartcontainer {
+        max-height: 800px;
+        min-height: 75vh;
+    }
+    #topbar {
+        width: 100%;
+    }
+    #toprow {
+        cursor: default;
+    }
+    #inspectlist {
+        width: 100%;
+    }
+    tr {
+        cursor: default;
+    }
+    td {
+        font-family: Verdana, Arial, 'Courier New';
+        cursor: default;
+    }
+    #thheader {
+        background-color: #CCDDFF;
+        color: #000000;
+        font-family: Verdana, Arial, 'Courier New';
+    }
+    #thsymbol {
+        width: 10%;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 8px 4px 4px 8px;
+        background-image: radial-gradient(rgb(204,221,255), rgb(184,201,235));
+        transition: transform .5s, box-shadow .5s;
+    }
+    #thsymbol[candrop=true] {
+        box-shadow: 3px 3px 8px lightgrey;
+        transform: scaleY(1.2);
+    }
+    #thinterval {
+        width: 2%;
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 4px 4px 4px 4px;
+        background-image: radial-gradient(rgb(204,221,255), rgb(184,201,235));
+        transition: transform .5s, box-shadow .5s;
+    }
+    #thinterval[candrop=true] {
+        box-shadow: 3px 3px 8px lightgrey;
+        transform: scaleY(1.2);
+    }
+    #thsignals {
+        padding-left: 20px;
+        padding-right: 20px;
+        border-radius: 4px 4px 4px 4px;
+        background-image: radial-gradient(rgb(204,221,255), rgb(184,201,235));
+        transition: transform .5s, box-shadow .5s;
+    }
+    #thsignals[candrop=true] {
+        box-shadow: 3px 3px 8px lightgrey;
+        transform: scaleY(1.2);
+    }
+    #thremove {
+        width: 30px;
+        padding: 0px;
+        border-radius: 4px 8px 8px 4px;
+        background-image: radial-gradient(rgb(204,221,255), rgb(184,201,235));
+        transition: transform .5s, box-shadow .5s;
+    }
+    #thremove[candrop=true] {
+        box-shadow: 3px 3px 8px lightgrey;
+        transform: scaleY(1.2);
+    }
+    #symbolinterval {
+        background-color: #CCDDFF;
+        color: #000000;
+        padding-left: 20px;
+        padding-right: 20px;
+        font-family: Verdana, Arial, 'Courier New';
+        border-radius: 8px 4px 4px 8px;
+    }
+    #inspect {
+        width: 30px;
+        padding: 0px;
+        background-color: #CCDDFF;
+        color: #000000;
+        cursor: grab;
+        background-image: radial-gradient(black 25%, transparent 0);
+        background-size: 3px 3px;
+        background-position: 0 0, 15px 15px;
+        border-radius: 4px 8px 8px 4px;
+    }
+    #trinspect {
+        background-color: #F0F0F0;
+        cursor: default;
+    }
+    #inspectSymbol {
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+        background-color: #F0F0F0;
+        color: #000000;
+        border-radius: 8px 4px 4px 8px;
+    }
+    #inspectInterval {
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: center;
+        background-color: #F0F0F0;
+        color: #000000;
+        border-radius: 4px 4px 4px 4px;
+    }
+    #inspectSignals {
+        padding-left: 10px;
+        padding-right: 10px;
+        text-align: left;
+        background-color: #F0F0F0;
+        color: #000000;
+        border-radius: 4px 4px 4px 4px;
+    }
+    #inspectRemove {
+        padding: 0px;
+        background-color: #F0F0F0;
+        color: #000000;
+        cursor: grab;
+        background-image: radial-gradient(black 25%, transparent 0);
+        background-size: 3px 3px;
+        background-position: 0 0, 15px 15px;
+        border-radius: 4px 8px 8px 4px;
+    }
+    #messagearea {
+        width: 70%;
+        padding-left: 30px;
+        padding-right: 30px;
+        font-family: Verdana, Arial, 'Courier New';
+        border-radius: 8px;
+    }
+    #activityarea {
+        width: 10px;
+        padding: 0px;
+        border-radius: 8px;
+        opacity: 0;
+        transition: opacity .3s;
+    }
+    #activityarea[activity=true] {
+        opacity: 1;
+        transition: opacity 0s;
+    }
+    #streamactivity {
+        width: 10px;
+        padding: 0px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity .3s;
+    }
+    #streamactivity[activity=true] {
+        opacity: 1;
+        transition: opacity 0s;
+    }
+</style>
+</head>
+<body>
+    <table id="topbar">
+        <tr id="toprow">
+            <td id="symbolinterval">
+                <span>Symbol <select id="symbols"></select></span><br />
+                <span>Interval <select id="intervals"></select></span>
+            </td>
+            <td id="inspect" draggable="true"></td>
+            <td id="messagearea">Initializing..</td>
+            <td id="activityarea"></td>
+        </tr>
+    </table>
+    <div id="chartcontainer"></div>
+    <table id="signalslist">
+        <tr id="signalsrow"></tr>
+    </table>
+    <table id="inspectlist">
+        <tr id="thheader">
+            <th id="thsymbol">Symbol</th>
+            <th id="thinterval">Interval</th>
+            <th id="thsignals">Signals</th>
+            <th id="thremove"></th>
+        </tr>
+    </table>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/indicators/indicators.js"></script>
+    <script src="https://code.highcharts.com/stock/indicators/indicators-all.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/drag-panes.js"></script>
+    <script src="https://code.highcharts.com/modules/annotations-advanced.js"></script>
+    <script src="https://code.highcharts.com/modules/price-indicator.js"></script>
+    <script src="https://code.highcharts.com/modules/full-screen.js"></script>
+    <script src="https://code.highcharts.com/modules/stock-tools.js"></script>
+    <script src="/math.js"></script>
+    <script src="/classChart.js"></script>
+    <script src="/classBinanceManager.js"></script>
+    <script src="/classBinanceSymbol.js"></script>
+
+    <script type="text/javascript">
+        var binanceMgr = undefined;
+
+        // drag & drop:
+        var draggedId = '';     // the id of the element being dragged
+        var draggedRow = -1;    // (possibly) table row being dragged
+        // the draggable element
+        function dragStartHandler(event) {
+            draggedId = event.target.id; // save in a global variable
+            draggedRow = -1; // clear indication for the table row being dragged
+            event.dataTransfer.effectAllowed = "copy";
+            event.dataTransfer.clearData();
+            switch (event.target.id) {
+                case 'inspect':
+                    // setData for use in the dropHandler
+                    event.dataTransfer.setData("text/plain", JSON.stringify([event.target.id, binanceMgr.current.symbol, binanceMgr.current.interval]));
+                    break;
+                case 'inspectRemove':
+                    var theSymbol = '';
+                    var theInterval = '';
+                    // find the row index
+                    var table = document.getElementById('inspectlist');
+                    var nrows = table.rows.length;
+                    for (var i = 0; i < nrows; i++) { // skip row 0, it is the th-header-row
+                        var row = table.rows[i];
+                        var ncells = row.cells.length;
+                        for (var j = 0; j < ncells; j++) {
+                            if (event.target == row.cells[j]) {
+                                // cell found => row found => symbol/interval found
+                                draggedRow = i; // table row being dragged
+                                theSymbol = row.cells[0].innerHTML;
+                                theInterval = row.cells[1].innerHTML;
+                                event.dataTransfer.setData("text/plain", JSON.stringify([event.target.id, i, theSymbol, theInterval]));
+                                return;
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+        // the dropzone
+        function dragEnterHandler(event) {
+            event.preventDefault();
+            switch (draggedId) {
+                case 'inspect':
+                    if (event.target.id == "thsymbol" || event.target.id == "thinterval" || event.target.id == "thsignals") {
+                        // set the element attribute so that the css style will change
+                        if (!binanceMgr.streamGetChartFlagSignal()) $(event.target).attr("candrop", true);
+                    }
+                    break;
+                case 'inspectRemove':
+                    if (event.target.id == "thremove") {
+                        $(event.target).attr("candrop", true);
+                        // set the table row opacity (JQuery rules)
+                        if (draggedRow >= 0) $("#inspectlist tr:eq(" + draggedRow + ")").css("opacity", 0.3);
+                    }
+                    break;
+            }
+        }
+        function dragOverHandler(event) {
+            event.preventDefault();
+        }
+        function dragLeaveHandler(event) {
+            event.preventDefault();
+            switch (draggedId) {
+                case 'inspect':
+                    if (event.target.id == "thsymbol" || event.target.id == "thinterval" || event.target.id == "thsignals") {
+                        // remove the css attribute so the element style will be restored
+                        $(event.target).removeAttr("candrop");
+                    }
+                    break;
+                case 'inspectRemove':
+                    if (event.target.id == "thremove") {
+                        $(event.target).removeAttr("candrop");
+                        // restore the table row opacity
+                        if (draggedRow >= 0) $("#inspectlist tr:eq(" + draggedRow + ")").css("opacity", 1.0);
+                    }
+                    break;
+            }
+        }
+        function dropHandler(event) {
+            event.preventDefault();
+            $(event.target).removeAttr("candrop");
+            // dataTransfer.getData is only allowed in the dropHandler.
+            const data = JSON.parse(event.dataTransfer.getData("text/plain"));
+            switch (data[0]) {
+                case 'inspect':
+                    // drag from "inspect", only to ["thsymbol","thinterval","thsignal"]
+                    if (event.target.id == "thsymbol" || event.target.id == "thinterval" || event.target.id == "thsignals") {
+                        // the stream now displayed in the chart will be used to generate signals, so keep it open..
+                        binanceMgr.streamSetChartFlagSignal();
+                    } else
+                        event.dataTransfer.dropEffect = "none"; // cancel the drop
+                    break;
+                case 'inspectRemove':
+                    // drag from "removeInspect", only to "thremove"
+                    if (event.target.id == "thremove") {
+                        var theRow = data[1]; // this should be the same value as 'draggedRow'
+                        var theSymbol = data[2];
+                        var theInterval = data[3];
+                        binanceMgr.streamClearFlagSignal(theSymbol, theInterval, theRow);
+                    } else
+                        event.dataTransfer.dropEffect = "none";
+                    break;
+            }
+        }
+        // the drag & drop eventListeners
+        window.addEventListener('DOMContentLoaded', () => {
+            // add ondragstart to elements that can be dragged
+            document.getElementById("inspect").addEventListener("dragstart", dragStartHandler);
+            // add ondragenter, ondragover & ondrop to elements that you can drop on
+            var e = document.getElementById("thsymbol");
+            e.addEventListener("dragenter", dragEnterHandler);
+            e.addEventListener("dragover", dragOverHandler);
+            e.addEventListener("dragleave", dragLeaveHandler);
+            e.addEventListener("drop", dropHandler);
+            e = document.getElementById("thinterval");
+            e.addEventListener("dragenter", dragEnterHandler);
+            e.addEventListener("dragover", dragOverHandler);
+            e.addEventListener("dragleave", dragLeaveHandler);
+            e.addEventListener("drop", dropHandler);
+            e = document.getElementById("thsignals");
+            e.addEventListener("dragenter", dragEnterHandler);
+            e.addEventListener("dragover", dragOverHandler);
+            e.addEventListener("dragleave", dragLeaveHandler);
+            e.addEventListener("drop", dropHandler);
+            e = document.getElementById("thremove");
+            e.addEventListener("dragenter", dragEnterHandler);
+            e.addEventListener("dragover", dragOverHandler);
+            e.addEventListener("dragleave", dragLeaveHandler);
+            e.addEventListener("drop", dropHandler);
+        });
+
+
+
+        // Add an onchange handler for the symbols dropdown,
+        // and refresh the chart with the selected symbol/interval data..
+        async function async_ElementHandlers() {
+            try {
+                // add an eventhandler when the symbol-dropdown changes
+                await document.getElementById('symbols').addEventListener("change", async function () {
+                    // save the selected symbol in a global variable, for easy access
+                    binanceMgr.setCurrentSymbol(document.getElementById('symbols').value);
+                    //  document.getElementById('symbols').selectedIndex
+                    //  $("#symbols option:selected").text();
+                });
+
+                // add an eventhandler when the symbolInterval-dropdown changes
+                await document.getElementById('intervals').addEventListener("change", async function () {
+                    binanceMgr.setCurrentInterval(document.getElementById('intervals').value);
+                });
+            } catch (err) {
+                alert(err);
+            }
+        }
+
+        // start the Binance Manager
+        async function async_setupPage() {
+            // instantiate the Binance Manager
+            try {
+                binanceMgr = new BinanceManager('symbols', 'intervals', 'messagearea', 'activityarea', 'inspectlist', 'chartcontainer');
+            } catch (err) {
+                alert(err);
+            }
+            // event handlers for elements
+            async_ElementHandlers();
+        }
+
+        // start the code when the page has loaded
+        $(document).ready(function () {
+            async_setupPage().catch(alert);
+        });
+
+        // close opened streams before the page is unloaded
+        $(window).on('beforeunload', function () {
+            binanceMgr.destroy();
+            return true;
+        });
+    </script>
+</body>
+</html>
